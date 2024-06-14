@@ -1,4 +1,4 @@
-﻿#include <SFML/Graphics.hpp>
+#include <SFML/Graphics.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <iostream>
@@ -222,13 +222,21 @@ void uzupelnijosie(float max, sf::Text& maxy, sf::Text& miny, sf::Text& maxx, fl
 
 sf::VertexArray sinusoida(charfloat Acf[4], charfloat Bcf[5], wymiaryokienek duze, float h, float M, float w, float& max) {
 
+	double A[4], B[5];
+	for (int i = 0; i < 4; i++) {
+		A[i] = Acf[i].f;
+	}
+	for (int i = 0; i < 5; i++) {
+		B[i] = Bcf[i].f;
+	}
+	float f = 1 / w;
 	double u[probki + 1];
 	float x[4] = { 0,0,0,0 }; // kazda cyfra to kolejna pochodna
 	double y[probki + 1];
 
 	for (int i = 0; i < probki + 1; i++)
 	{
-		u[i] = M * sin(w * 2 * PI * i * h);
+		u[i] = M * sin(f * 2 * PI * i * h);
 	}
 
 	float mac_A[4][4]; // pierwsza cyfra macierzy to numer wiersza druga kolumny
@@ -242,39 +250,49 @@ sf::VertexArray sinusoida(charfloat Acf[4], charfloat Bcf[5], wymiaryokienek duz
 			mac_A[i][j] = 0;
 		}
 	}
-	for (int i = 0; i < 4; i++)
-	{
-		mac_A[3][i] = -Bcf[i].f / Bcf[4].f;
-		mac_B[i] = 0;
-		mac_C[i] = Acf[i].f / Bcf[4].f;
-	}
-	for (int i = 0; i < 3; i++)
-	{
-		mac_A[i][i + 1] = 1;
-	}
-	mac_B[3] = 1;
 
-	float mac_Ax[4] = { 0,0,0,0 };
-	float mac_Bu[4] = { 0,0,0,0 };
-	float mac_Cx = 0;
-	float xi[4] = { 0,0,0,0 }; //warunki poczatkowe kolejne pochodne
-
-	for (int i = 0; i < probki + 1; i++)
+	if (B[4] == 0 && B[3] == 0 && B[2] == 0 && B[1] == 0 && B[0] != 0 && A[3] == 0 && A[2] == 0 && A[1] == 0 && A[0] != 0)
 	{
-		for (int j = 0; j < 4; j++)
+		for (int i = 0; i < probki + 1; i++)
+			y[i] = u[i];
+	}
+
+	if (B[4] != 0)
+	{
+		for (int i = 0; i < 4; i++)
 		{
-			mac_Ax[j] = mac_A[j][0] * x[0] + mac_A[j][1] * x[1] + mac_A[j][2] * x[2] + mac_A[j][3] * x[3];
-			mac_Bu[j] = mac_B[j] * u[i];
-			mac_Cx = mac_C[0] * x[0] + mac_C[1] * x[1] + mac_C[2] * x[2] + mac_C[3] * x[3];
+			mac_A[3][i] = -Bcf[i].f / Bcf[4].f;
+			mac_B[i] = 0;
+			mac_C[i] = Acf[i].f / Bcf[4].f;
 		}
-		for (int j = 0; j < 4; j++)
+		for (int i = 0; i < 3; i++)
 		{
-			xi[j] = mac_Ax[j] + mac_Bu[j];
-			xi[j] = xi[j] * h;
-			xi[j] = xi[j] + x[j];
-			x[j] = xi[j];
+			mac_A[i][i + 1] = 1;
 		}
-		y[i] = mac_Cx;
+		mac_B[3] = 1;
+
+		float mac_Ax[4] = { 0,0,0,0 };
+		float mac_Bu[4] = { 0,0,0,0 };
+		float mac_Cx = 0;
+		float xi[4] = { 0,0,0,0 }; //warunki poczatkowe kolejne pochodne
+
+		for (int i = 0; i < probki + 1; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				mac_Ax[j] = mac_A[j][0] * x[0] + mac_A[j][1] * x[1] + mac_A[j][2] * x[2] + mac_A[j][3] * x[3];
+				mac_Bu[j] = mac_B[j] * u[i];
+				mac_Cx = mac_C[0] * x[0] + mac_C[1] * x[1] + mac_C[2] * x[2] + mac_C[3] * x[3];
+			}
+			for (int j = 0; j < 4; j++)
+			{
+				xi[j] = mac_Ax[j] + mac_Bu[j];
+				xi[j] = xi[j] * h;
+				xi[j] = xi[j] + x[j];
+				x[j] = xi[j];
+			}
+			y[i] = mac_Cx;
+		}
 	}
 
 	max = 0;
@@ -312,6 +330,14 @@ sf::VertexArray sinusoida(charfloat Acf[4], charfloat Bcf[5], wymiaryokienek duz
 
 sf::VertexArray prostokat(charfloat Acf[4], charfloat Bcf[5], wymiaryokienek duze, float h, float M, float t, float& max) {
 
+	double A[4], B[5];
+	for (int i = 0; i < 4; i++) {
+		A[i] = Acf[i].f;
+	}
+	for (int i = 0; i < 5; i++) {
+		B[i] = Bcf[i].f;
+	}
+
 	double u[probki + 1];
 	float x[4] = { 0,0,0,0 }; // kazda cyfra to kolejna pochodna
 	double y[probki + 1];
@@ -326,50 +352,59 @@ sf::VertexArray prostokat(charfloat Acf[4], charfloat Bcf[5], wymiaryokienek duz
 		u[i] = M;
 	}
 
-	float mac_A[4][4]; // pierwsza cyfra macierzy to numer wiersza druga kolumny
-	float mac_B[4];
-	float mac_C[4];
-
-	for (int i = 0; i < 4; i++)
+	if (B[4] == 0 && B[3] == 0 && B[2] == 0 && B[1] == 0 && B[0] != 0 && A[3] == 0 && A[2] == 0 && A[1] == 0 && A[0] != 0)
 	{
-		for (int j = 0; j < 4; j++)
-		{
-			mac_A[i][j] = 0;
-		}
+		for (int i = 0; i < probki + 1; i++)
+			y[i] = u[i];
 	}
-	for (int i = 0; i < 4; i++)
-	{
-		mac_A[3][i] = -Bcf[i].f / Bcf[4].f;
-		mac_B[i] = 0;
-		mac_C[i] = Acf[i].f / Bcf[4].f;
-	}
-	for (int i = 0; i < 3; i++)
-	{
-		mac_A[i][i + 1] = 1;
-	}
-	mac_B[3] = 1;
 
-	float mac_Ax[4] = { 0,0,0,0 };
-	float mac_Bu[4] = { 0,0,0,0 };
-	float mac_Cx = 0;
-	float xi[4] = { 0,0,0,0 }; //warunki poczatkowe kolejne pochodne
-
-	for (int i = 0; i < probki + 1; i++)
+	if (B[4] != 0)
 	{
-		for (int j = 0; j < 4; j++)
+		float mac_A[4][4]; // pierwsza cyfra macierzy to numer wiersza druga kolumny
+		float mac_B[4];
+		float mac_C[4];
+
+		for (int i = 0; i < 4; i++)
 		{
-			mac_Ax[j] = mac_A[j][0] * x[0] + mac_A[j][1] * x[1] + mac_A[j][2] * x[2] + mac_A[j][3] * x[3];
-			mac_Bu[j] = mac_B[j] * u[i];
-			mac_Cx = mac_C[0] * x[0] + mac_C[1] * x[1] + mac_C[2] * x[2] + mac_C[3] * x[3];
+			for (int j = 0; j < 4; j++)
+			{
+				mac_A[i][j] = 0;
+			}
 		}
-		for (int j = 0; j < 4; j++)
+		for (int i = 0; i < 4; i++)
 		{
-			xi[j] = mac_Ax[j] + mac_Bu[j];
-			xi[j] = xi[j] * h;
-			xi[j] = xi[j] + x[j];
-			x[j] = xi[j];
+			mac_A[3][i] = -Bcf[i].f / Bcf[4].f;
+			mac_B[i] = 0;
+			mac_C[i] = Acf[i].f / Bcf[4].f;
 		}
-		y[i] = mac_Cx;
+		for (int i = 0; i < 3; i++)
+		{
+			mac_A[i][i + 1] = 1;
+		}
+		mac_B[3] = 1;
+
+		float mac_Ax[4] = { 0,0,0,0 };
+		float mac_Bu[4] = { 0,0,0,0 };
+		float mac_Cx = 0;
+		float xi[4] = { 0,0,0,0 }; //warunki poczatkowe kolejne pochodne
+
+		for (int i = 0; i < probki + 1; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				mac_Ax[j] = mac_A[j][0] * x[0] + mac_A[j][1] * x[1] + mac_A[j][2] * x[2] + mac_A[j][3] * x[3];
+				mac_Bu[j] = mac_B[j] * u[i];
+				mac_Cx = mac_C[0] * x[0] + mac_C[1] * x[1] + mac_C[2] * x[2] + mac_C[3] * x[3];
+			}
+			for (int j = 0; j < 4; j++)
+			{
+				xi[j] = mac_Ax[j] + mac_Bu[j];
+				xi[j] = xi[j] * h;
+				xi[j] = xi[j] + x[j];
+				x[j] = xi[j];
+			}
+			y[i] = mac_Cx;
+		}
 	}
 
 	max = 0;
@@ -384,7 +419,6 @@ sf::VertexArray prostokat(charfloat Acf[4], charfloat Bcf[5], wymiaryokienek duz
 			}
 		}
 	}
-
 	for (int i = 0; i < probki; i++) {
 		y[i] = y[i] * 99 / max;
 	}
@@ -450,59 +484,65 @@ sf::VertexArray trojkat(charfloat Acf[4], charfloat Bcf[5], wymiaryokienek duze,
 			etap = 2;
 		}
 
-		if (u[i] == 0 && etap == 2)
+		if (u[i] >= 0 && etap == 2)
 		{
 			etap = 0;
 			j = 1;
 		}
 	}
-
-	float mac_A[4][4]; // pierwsza cyfra macierzy to numer wiersza druga kolumny
-	float mac_B[4];
-	float mac_C[4];
-
-	for (int i = 0; i < 4; i++)
+	if (B[4] == 0 && B[3] == 0 && B[2] == 0 && B[1] == 0 && B[0] != 0 && A[3] == 0 && A[2] == 0 && A[1] == 0 && A[0] != 0)
 	{
-		for (int j = 0; j < 4; j++)
+		for (int i = 0; i < probki + 1; i++)
+			y[i] = u[i];
+	}
+	if (B[4] != 0)
+	{
+		float mac_A[4][4]; // pierwsza cyfra macierzy to numer wiersza druga kolumny
+		float mac_B[4];
+		float mac_C[4];
+
+		for (int i = 0; i < 4; i++)
 		{
-			mac_A[i][j] = 0;
+			for (int j = 0; j < 4; j++)
+			{
+				mac_A[i][j] = 0;
+			}
+		}
+		for (int i = 0; i < 4; i++)
+		{
+			mac_A[3][i] = -Bcf[i].f / Bcf[4].f;
+			mac_B[i] = 0;
+			mac_C[i] = Acf[i].f / Bcf[4].f;
+		}
+		for (int i = 0; i < 3; i++)
+		{
+			mac_A[i][i + 1] = 1;
+		}
+		mac_B[3] = 1;
+
+		float mac_Ax[4] = { 0,0,0,0 };
+		float mac_Bu[4] = { 0,0,0,0 };
+		float mac_Cx = 0;
+		float xi[4] = { 0,0,0,0 }; //warunki poczatkowe kolejne pochodne
+
+		for (int i = 0; i < probki + 1; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				mac_Ax[j] = mac_A[j][0] * x[0] + mac_A[j][1] * x[1] + mac_A[j][2] * x[2] + mac_A[j][3] * x[3];
+				mac_Bu[j] = mac_B[j] * u[i];
+				mac_Cx = mac_C[0] * x[0] + mac_C[1] * x[1] + mac_C[2] * x[2] + mac_C[3] * x[3];
+			}
+			for (int j = 0; j < 4; j++)
+			{
+				xi[j] = mac_Ax[j] + mac_Bu[j];
+				xi[j] = xi[j] * h;
+				xi[j] = xi[j] + x[j];
+				x[j] = xi[j];
+			}
+			y[i] = mac_Cx;
 		}
 	}
-	for (int i = 0; i < 4; i++)
-	{
-		mac_A[3][i] = -Bcf[i].f / Bcf[4].f;
-		mac_B[i] = 0;
-		mac_C[i] = Acf[i].f / Bcf[4].f;
-	}
-	for (int i = 0; i < 3; i++)
-	{
-		mac_A[i][i + 1] = 1;
-	}
-	mac_B[3] = 1;
-
-	float mac_Ax[4] = { 0,0,0,0 };
-	float mac_Bu[4] = { 0,0,0,0 };
-	float mac_Cx = 0;
-	float xi[4] = { 0,0,0,0 }; //warunki poczatkowe kolejne pochodne
-
-	for (int i = 0; i < probki + 1; i++)
-	{
-		for (int j = 0; j < 4; j++)
-		{
-			mac_Ax[j] = mac_A[j][0] * x[0] + mac_A[j][1] * x[1] + mac_A[j][2] * x[2] + mac_A[j][3] * x[3];
-			mac_Bu[j] = mac_B[j] * u[i];
-			mac_Cx = mac_C[0] * x[0] + mac_C[1] * x[1] + mac_C[2] * x[2] + mac_C[3] * x[3];
-		}
-		for (int j = 0; j < 4; j++)
-		{
-			xi[j] = mac_Ax[j] + mac_Bu[j];
-			xi[j] = xi[j] * h;
-			xi[j] = xi[j] + x[j];
-			x[j] = xi[j];
-		}
-		y[i] = mac_Cx;
-	}
-
 
 	max = 0;
 
@@ -517,7 +557,7 @@ sf::VertexArray trojkat(charfloat Acf[4], charfloat Bcf[5], wymiaryokienek duze,
 		}
 	}
 
-	for (int i = 0; i < probki; i++) {
+	for (int i = 0; i < probki + 1; i++) {
 		y[i] = y[i] * 99 / max;
 	}
 
@@ -597,13 +637,16 @@ wykresybode bodefun(charfloat Acf[4], charfloat Bcf[5], wymiaryokienek duze, cha
 	return bode;
 }
 
-bool stabilnosc(charfloat b[]) {
-
+bool stabilnosc(charfloat b[], charfloat a[]) {
+	if (b[4].f == 0 && b[3].f == 0 && b[2].f == 0 && b[1].f == 0 && b[0].f != 0 && a[3].f == 0 && a[2].f == 0 && a[1].f == 0 && a[0].f != 0)
+	{
+		return 1;
+	}
 	if ((b[4].f > 0 && b[3].f > 0 && b[2].f > 0 && b[1].f > 0 && b[0].f > 0) || (b[4].f < 0 && b[3].f < 0 && b[2].f < 0 && b[1].f < 0 && b[0].f < 0))
 	{
 		double x = -(b[4].f * b[1].f - b[3].f * b[2].f) / (b[3].f);
 
-		if ((-(b[4].f * b[1].f - b[3].f * b[2].f) > 0) && (-b[3].f * b[0].f + b[1].f * x > 0))
+		if ((-(b[4].f * b[1].f - b[3].f * b[2].f) > 0) && ((-b[3].f * b[0].f + b[1].f * x > 0) || (-b[3].f * b[0].f + b[1].f * x > 0 == 0)))
 		{
 			return 1;
 		}
@@ -1413,7 +1456,7 @@ int main()
 					}
 					//cout << podstawa_czasu.c << endl;
 					bode = bodefun(a, b, duze, czestotliwos_poczatkowa);
-					if (stabilnosc(b)) {
+					if (stabilnosc(b, a)) {
 						stabilnosc_txt.setString("TAK");
 					}
 					else {
